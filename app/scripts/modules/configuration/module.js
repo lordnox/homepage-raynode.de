@@ -18,7 +18,7 @@ angular.module('configuration', [])
       routing : {
         prefix : '',
         html5Mode : true,
-        default: "/"
+        default: ""
       },
 
       template: function(module) {
