@@ -105,7 +105,8 @@ module.exports = function(grunt) {
             cwd: project.appbase,
             src: [
               '**',
-              '!' + Path.join(project.assetspath, '**')
+              '!' + Path.join(project.assetspath, '**'),
+              '**/*.html'
             ],
             dest: Path.join(project.buildpath, project.client),
           },
