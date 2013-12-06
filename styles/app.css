@@ -15825,19 +15825,19 @@ html, body {
 }
 
 .icon-nodejs {
-  background-image: url(/img/nodejs.jpg);
+  background-image: url(../img/nodejs.jpg);
 }
 
 .icon-yeoman {
-  background-image: url(/img/yeoman.png);
+  background-image: url(../img/yeoman.png);
 }
 
 .icon-bower {
-  background-image: url(/img/bower.png);
+  background-image: url(../img/bower.png);
 }
 
 .icon-grunt {
-  background-image: url(/img/grunt.png);
+  background-image: url(../img/grunt.png);
 }
 
 .projects {
