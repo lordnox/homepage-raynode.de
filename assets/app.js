@@ -22600,7 +22600,7 @@ angular.module('Scope.safeApply', []).run(function($rootScope) {
     $stateProvider
       .state('app', {
         abstract: true,
-        url: '/homepage-raynode.de'
+        url: '/homepage-raynode.de',
         views: {
           '@': {
             template: template.abstract,
