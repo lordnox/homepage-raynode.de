@@ -22555,7 +22555,7 @@ angular.module('Scope.safeApply', []).run(function($rootScope) {
       routing : {
         prefix : '',
         html5Mode : true,
-        default: "/"
+        default: ""
       },
 
       template: function(module) {
@@ -22610,11 +22610,11 @@ angular.module('Scope.safeApply', []).run(function($rootScope) {
         }
       })
       .state('app.home', {
-        url: '/index.html',
+        url: 'index.html',
         templateUrl: template('index')
       })
       .state('app.about', {
-        url: '/about.html',
+        url: 'about.html',
         templateUrl: template('about')
       })
   })
