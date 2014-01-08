@@ -1,5 +1,6 @@
 
 var module = angular.module('application', [
+    'ngAnimate',
     'ui.router',
     'configuration',
     'Scope.safeApply',

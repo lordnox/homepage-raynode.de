@@ -134,6 +134,53 @@ legend { display:none; }
   font-style: normal;
 }
 
+.main-view.ng-enter {
+  transition: all 1s;
+  height: 0px;
+  overflow: hidden;
+}
+
+.main-view.ng-enter-active {
+  height: 100px;
+}
+
+
+@-webkit-keyframes fade-away {
+  0% {
+    -webkit-filter: blur(0px);
+  }
+  50% {
+    -webkit-filter: blur(20px);
+
+  }
+  100% {
+    -webkit-filter: blur(20px);
+  }
+}
+
+.fader {
+  transition: opacity 5s ease-out;
+}
+
+.fader.ng-enter {
+  opacity: .5;
+}
+
+.fader.ng-enter-active {
+  opacity: 1;
+}
+
+x.main-view:hover {
+  -webkit-filter: blur(0px);
+  opacity: 0;
+  -webkit-animation-name: fade-away;
+  -webkit-animation-duration: .5s;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-timing-function: ease-out;
+  -webkit-animation-fill-mode: forwards;
+  -webkit-animation-delay: 0s;
+}
+
 .fa {
   display: inline-block;
   font-family: FontAwesome;

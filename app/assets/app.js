@@ -20129,880 +20129,845 @@ var styleDirective = valueFn({
 })(window, document);
 
 !angular.$$csp() && angular.element(document).find('head').prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide{display:none !important;}ng\\:form{display:block;}.ng-animate-start{clip:rect(0,auto,auto,0);-ms-zoom:1.0001;}.ng-animate-active{clip:rect(-1px,auto,auto,0);-ms-zoom:1;}</style>');;/**
- * @license AngularJS v1.2.1
+ * @license AngularJS v1.2.0-rc.3
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  */
 (function(window, angular, undefined) {'use strict';
-
 /**
  * @ngdoc overview
- * @name ngRoute
+ * @name ngAnimate
  * @description
  *
- * # ngRoute
+ * # ngAnimate
  *
- * The `ngRoute` module provides routing and deeplinking services and directives for angular apps.
+ * `ngAnimate` is an optional module that provides CSS and JavaScript animation hooks.
  *
- * {@installModule route}
+ * {@installModule animate}
  *
- * <div doc-module-components="ngRoute"></div>
+ * # Usage
+ *
+ * To see animations in action, all that is required is to define the appropriate CSS classes
+ * or to register a JavaScript animation via the $animation service. The directives that support animation automatically are:
+ * `ngRepeat`, `ngInclude`, `ngSwitch`, `ngShow`, `ngHide` and `ngView`. Custom directives can take advantage of animation
+ * by using the `$animate` service.
+ *
+ * Below is a more detailed breakdown of the supported animation events provided by pre-existing ng directives:
+ *
+ * | Directive                                                 | Supported Animations                               |
+ * |---------------------------------------------------------- |----------------------------------------------------|
+ * | {@link ng.directive:ngRepeat#animations ngRepeat}         | enter, leave and move                              |
+ * | {@link ngRoute.directive:ngView#animations ngView}        | enter and leave                                    |
+ * | {@link ng.directive:ngInclude#animations ngInclude}       | enter and leave                                    |
+ * | {@link ng.directive:ngSwitch#animations ngSwitch}         | enter and leave                                    |
+ * | {@link ng.directive:ngIf#animations ngIf}                 | enter and leave                                    |
+ * | {@link ng.directive:ngClass#animations ngClass}           | add and remove                                     |
+ * | {@link ng.directive:ngShow#animations ngShow & ngHide}    | add and remove (the ng-hide class value)           |
+ *
+ * You can find out more information about animations upon visiting each directive page.
+ *
+ * Below is an example of how to apply animations to a directive that supports animation hooks:
+ *
+ * <pre>
+ * <style type="text/css">
+ * .slide.ng-enter > div,
+ * .slide.ng-leave > div {
+ *   -webkit-transition:0.5s linear all;
+ *   -moz-transition:0.5s linear all;
+ *   -o-transition:0.5s linear all;
+ *   transition:0.5s linear all;
+ * }
+ *
+ * .slide.ng-enter { }        /&#42; starting animations for enter &#42;/
+ * .slide.ng-enter-active { } /&#42; terminal animations for enter &#42;/
+ * .slide.ng-leave { }        /&#42; starting animations for leave &#42;/
+ * .slide.ng-leave-active { } /&#42; terminal animations for leave &#42;/
+ * </style>
+ *
+ * <!--
+ * the animate service will automatically add .ng-enter and .ng-leave to the element
+ * to trigger the CSS transition/animations
+ * -->
+ * <ANY class="slide" ng-include="..."></ANY>
+ * </pre>
+ *
+ * Keep in mind that if an animation is running, any child elements cannot be animated until the parent element's
+ * animation has completed.
+ *
+ * <h2>CSS-defined Animations</h2>
+ * The animate service will automatically apply two CSS classes to the animated element and these two CSS classes
+ * are designed to contain the start and end CSS styling. Both CSS transitions and keyframe animations are supported
+ * and can be used to play along with this naming structure.
+ *
+ * The following code below demonstrates how to perform animations using **CSS transitions** with Angular:
+ *
+ * <pre>
+ * <style type="text/css">
+ * /&#42;
+ *  The animate class is apart of the element and the ng-enter class
+ *  is attached to the element once the enter animation event is triggered
+ * &#42;/
+ * .reveal-animation.ng-enter {
+ *  -webkit-transition: 1s linear all; /&#42; Safari/Chrome &#42;/
+ *  -moz-transition: 1s linear all; /&#42; Firefox &#42;/
+ *  -o-transition: 1s linear all; /&#42; Opera &#42;/
+ *  transition: 1s linear all; /&#42; IE10+ and Future Browsers &#42;/
+ *
+ *  /&#42; The animation preparation code &#42;/
+ *  opacity: 0;
+ * }
+ *
+ * /&#42;
+ *  Keep in mind that you want to combine both CSS
+ *  classes together to avoid any CSS-specificity
+ *  conflicts
+ * &#42;/
+ * .reveal-animation.ng-enter.ng-enter-active {
+ *  /&#42; The animation code itself &#42;/
+ *  opacity: 1;
+ * }
+ * </style>
+ *
+ * <div class="view-container">
+ *   <div ng-view class="reveal-animation"></div>
+ * </div>
+ * </pre>
+ *
+ * The following code below demonstrates how to perform animations using **CSS animations** with Angular:
+ *
+ * <pre>
+ * <style type="text/css">
+ * .reveal-animation.ng-enter {
+ *   -webkit-animation: enter_sequence 1s linear; /&#42; Safari/Chrome &#42;/
+ *   -moz-animation: enter_sequence 1s linear; /&#42; Firefox &#42;/
+ *   -o-animation: enter_sequence 1s linear; /&#42; Opera &#42;/
+ *   animation: enter_sequence 1s linear; /&#42; IE10+ and Future Browsers &#42;/
+ * }
+ * &#64-webkit-keyframes enter_sequence {
+ *   from { opacity:0; }
+ *   to { opacity:1; }
+ * }
+ * &#64-moz-keyframes enter_sequence {
+ *   from { opacity:0; }
+ *   to { opacity:1; }
+ * }
+ * &#64-o-keyframes enter_sequence {
+ *   from { opacity:0; }
+ *   to { opacity:1; }
+ * }
+ * &#64keyframes enter_sequence {
+ *   from { opacity:0; }
+ *   to { opacity:1; }
+ * }
+ * </style>
+ *
+ * <div class="view-container">
+ *   <div ng-view class="reveal-animation"></div>
+ * </div>
+ * </pre>
+ *
+ * Both CSS3 animations and transitions can be used together and the animate service will figure out the correct duration and delay timing.
+ *
+ * Upon DOM mutation, the event class is added first (something like `ng-enter`), then the browser prepares itself to add
+ * the active class (in this case `ng-enter-active`) which then triggers the animation. The animation module will automatically
+ * detect the CSS code to determine when the animation ends. Once the animation is over then both CSS classes will be
+ * removed from the DOM. If a browser does not support CSS transitions or CSS animations then the animation will start and end
+ * immediately resulting in a DOM element that is at its final state. This final state is when the DOM element
+ * has no CSS transition/animation classes applied to it.
+ *
+ * <h2>JavaScript-defined Animations</h2>
+ * In the event that you do not want to use CSS3 transitions or CSS3 animations or if you wish to offer animations on browsers that do not
+ * yet support CSS transitions/animations, then you can make use of JavaScript animations defined inside of your AngularJS module.
+ *
+ * <pre>
+ * //!annotate="YourApp" Your AngularJS Module|Replace this or ngModule with the module that you used to define your application.
+ * var ngModule = angular.module('YourApp', []);
+ * ngModule.animation('.my-crazy-animation', function() {
+ *   return {
+ *     enter: function(element, done) {
+ *       //run the animation
+ *       //!annotate Cancel Animation|This function (if provided) will perform the cancellation of the animation when another is triggered
+ *       return function(element, done) {
+ *         //cancel the animation
+ *       }
+ *     }
+ *     leave: function(element, done) { },
+ *     move: function(element, done) { },
+ *     show: function(element, done) { },
+ *     hide: function(element, done) { },
+ *     addClass: function(element, className, done) { },
+ *     removeClass: function(element, className, done) { },
+ *   }
+ * });
+ * </pre>
+ *
+ * JavaScript-defined animations are created with a CSS-like class selector and a collection of events which are set to run
+ * a javascript callback function. When an animation is triggered, $animate will look for a matching animation which fits
+ * the element's CSS class attribute value and then run the matching animation event function (if found).
+ * In other words, if the CSS classes present on the animated element match any of the JavaScript animations then the callback function
+ * be executed. It should be also noted that only simple class selectors are allowed.
+ *
+ * Within a JavaScript animation, an object containing various event callback animation functions is expected to be returned.
+ * As explained above, these callbacks are triggered based on the animation event. Therefore if an enter animation is run,
+ * and the JavaScript animation is found, then the enter callback will handle that animation (in addition to the CSS keyframe animation
+ * or transition code that is defined via a stylesheet).
+ *
  */
- /* global -ngRouteModule */
-var ngRouteModule = angular.module('ngRoute', ['ng']).
-                        provider('$route', $RouteProvider);
 
-/**
- * @ngdoc object
- * @name ngRoute.$routeProvider
- * @function
- *
- * @description
- *
- * Used for configuring routes. See {@link ngRoute.$route $route} for an example.
- *
- * Requires the {@link ngRoute `ngRoute`} module to be installed.
- */
-function $RouteProvider(){
-  function inherit(parent, extra) {
-    return angular.extend(new (angular.extend(function() {}, {prototype:parent}))(), extra);
-  }
-
-  var routes = {};
+angular.module('ngAnimate', ['ng'])
 
   /**
-   * @ngdoc method
-   * @name ngRoute.$routeProvider#when
-   * @methodOf ngRoute.$routeProvider
-   *
-   * @param {string} path Route path (matched against `$location.path`). If `$location.path`
-   *    contains redundant trailing slash or is missing one, the route will still match and the
-   *    `$location.path` will be updated to add or drop the trailing slash to exactly match the
-   *    route definition.
-   *
-   *      * `path` can contain named groups starting with a colon (`:name`). All characters up
-   *        to the next slash are matched and stored in `$routeParams` under the given `name`
-   *        when the route matches.
-   *      * `path` can contain named groups starting with a colon and ending with a star (`:name*`).
-   *        All characters are eagerly stored in `$routeParams` under the given `name`
-   *        when the route matches.
-   *      * `path` can contain optional named groups with a question mark (`:name?`).
-   *
-   *    For example, routes like `/color/:color/largecode/:largecode*\/edit` will match
-   *    `/color/brown/largecode/code/with/slashs/edit` and extract:
-   *
-   *      * `color: brown`
-   *      * `largecode: code/with/slashs`.
-   *
-   *
-   * @param {Object} route Mapping information to be assigned to `$route.current` on route
-   *    match.
-   *
-   *    Object properties:
-   *
-   *    - `controller` – `{(string|function()=}` – Controller fn that should be associated with
-   *      newly created scope or the name of a {@link angular.Module#controller registered
-   *      controller} if passed as a string.
-   *    - `controllerAs` – `{string=}` – A controller alias name. If present the controller will be
-   *      published to scope under the `controllerAs` name.
-   *    - `template` – `{string=|function()=}` – html template as a string or a function that
-   *      returns an html template as a string which should be used by {@link
-   *      ngRoute.directive:ngView ngView} or {@link ng.directive:ngInclude ngInclude} directives.
-   *      This property takes precedence over `templateUrl`.
-   *
-   *      If `template` is a function, it will be called with the following parameters:
-   *
-   *      - `{Array.<Object>}` - route parameters extracted from the current
-   *        `$location.path()` by applying the current route
-   *
-   *    - `templateUrl` – `{string=|function()=}` – path or function that returns a path to an html
-   *      template that should be used by {@link ngRoute.directive:ngView ngView}.
-   *
-   *      If `templateUrl` is a function, it will be called with the following parameters:
-   *
-   *      - `{Array.<Object>}` - route parameters extracted from the current
-   *        `$location.path()` by applying the current route
-   *
-   *    - `resolve` - `{Object.<string, function>=}` - An optional map of dependencies which should
-   *      be injected into the controller. If any of these dependencies are promises, the router
-   *      will wait for them all to be resolved or one to be rejected before the controller is
-   *      instantiated.
-   *      If all the promises are resolved successfully, the values of the resolved promises are
-   *      injected and {@link ngRoute.$route#$routeChangeSuccess $routeChangeSuccess} event is
-   *      fired. If any of the promises are rejected the
-   *      {@link ngRoute.$route#$routeChangeError $routeChangeError} event is fired. The map object
-   *      is:
-   *
-   *      - `key` – `{string}`: a name of a dependency to be injected into the controller.
-   *      - `factory` - `{string|function}`: If `string` then it is an alias for a service.
-   *        Otherwise if function, then it is {@link api/AUTO.$injector#invoke injected}
-   *        and the return value is treated as the dependency. If the result is a promise, it is
-   *        resolved before its value is injected into the controller. Be aware that
-   *        `ngRoute.$routeParams` will still refer to the previous route within these resolve
-   *        functions.  Use `$route.current.params` to access the new route parameters, instead.
-   *
-   *    - `redirectTo` – {(string|function())=} – value to update
-   *      {@link ng.$location $location} path with and trigger route redirection.
-   *
-   *      If `redirectTo` is a function, it will be called with the following parameters:
-   *
-   *      - `{Object.<string>}` - route parameters extracted from the current
-   *        `$location.path()` by applying the current route templateUrl.
-   *      - `{string}` - current `$location.path()`
-   *      - `{Object}` - current `$location.search()`
-   *
-   *      The custom `redirectTo` function is expected to return a string which will be used
-   *      to update `$location.path()` and `$location.search()`.
-   *
-   *    - `[reloadOnSearch=true]` - {boolean=} - reload route when only `$location.search()`
-   *      or `$location.hash()` changes.
-   *
-   *      If the option is set to `false` and url in the browser changes, then
-   *      `$routeUpdate` event is broadcasted on the root scope.
-   *
-   *    - `[caseInsensitiveMatch=false]` - {boolean=} - match routes without being case sensitive
-   *
-   *      If the option is set to `true`, then the particular route can be matched without being
-   *      case sensitive
-   *
-   * @returns {Object} self
-   *
+   * @ngdoc object
+   * @name ngAnimate.$animateProvider
    * @description
-   * Adds a new route definition to the `$route` service.
-   */
-  this.when = function(path, route) {
-    routes[path] = angular.extend(
-      {reloadOnSearch: true},
-      route,
-      path && pathRegExp(path, route)
-    );
-
-    // create redirection for trailing slashes
-    if (path) {
-      var redirectPath = (path[path.length-1] == '/')
-            ? path.substr(0, path.length-1)
-            : path +'/';
-
-      routes[redirectPath] = angular.extend(
-        {redirectTo: path},
-        pathRegExp(redirectPath, route)
-      );
-    }
-
-    return this;
-  };
-
-   /**
-    * @param path {string} path
-    * @param opts {Object} options
-    * @return {?Object}
-    *
-    * @description
-    * Normalizes the given path, returning a regular expression
-    * and the original path.
-    *
-    * Inspired by pathRexp in visionmedia/express/lib/utils.js.
-    */
-  function pathRegExp(path, opts) {
-    var insensitive = opts.caseInsensitiveMatch,
-        ret = {
-          originalPath: path,
-          regexp: path
-        },
-        keys = ret.keys = [];
-
-    path = path
-      .replace(/([().])/g, '\\$1')
-      .replace(/(\/)?:(\w+)([\?|\*])?/g, function(_, slash, key, option){
-        var optional = option === '?' ? option : null;
-        var star = option === '*' ? option : null;
-        keys.push({ name: key, optional: !!optional });
-        slash = slash || '';
-        return ''
-          + (optional ? '' : slash)
-          + '(?:'
-          + (optional ? slash : '')
-          + (star && '(.+?)' || '([^/]+)')
-          + (optional || '')
-          + ')'
-          + (optional || '');
-      })
-      .replace(/([\/$\*])/g, '\\$1');
-
-    ret.regexp = new RegExp('^' + path + '$', insensitive ? 'i' : '');
-    return ret;
-  }
-
-  /**
-   * @ngdoc method
-   * @name ngRoute.$routeProvider#otherwise
-   * @methodOf ngRoute.$routeProvider
    *
-   * @description
-   * Sets route definition that will be used on route change when no other route definition
-   * is matched.
+   * The `$AnimationProvider` allows developers to register and access custom JavaScript animations directly inside
+   * of a module. When an animation is triggered, the $animate service will query the $animation function to find any
+   * animations that match the provided name value.
    *
-   * @param {Object} params Mapping information to be assigned to `$route.current`.
-   * @returns {Object} self
+   * Requires the {@link ngAnimate `ngAnimate`} module to be installed.
+   *
+   * Please visit the {@link ngAnimate `ngAnimate`} module overview page learn more about how to use animations in your application.
+   *
    */
-  this.otherwise = function(params) {
-    this.when(null, params);
-    return this;
-  };
+  .config(['$provide', '$animateProvider', function($provide, $animateProvider) {
+    var noop = angular.noop;
+    var forEach = angular.forEach;
+    var selectors = $animateProvider.$$selectors;
 
+    var NG_ANIMATE_STATE = '$$ngAnimateState';
+    var NG_ANIMATE_CLASS_NAME = 'ng-animate';
+    var rootAnimateState = {running:true};
+    $provide.decorator('$animate', ['$delegate', '$injector', '$sniffer', '$rootElement', '$timeout', '$rootScope',
+                            function($delegate,   $injector,   $sniffer,   $rootElement,   $timeout,   $rootScope) {
 
-  this.$get = ['$rootScope',
-               '$location',
-               '$routeParams',
-               '$q',
-               '$injector',
-               '$http',
-               '$templateCache',
-               '$sce',
-      function($rootScope, $location, $routeParams, $q, $injector, $http, $templateCache, $sce) {
+      $rootElement.data(NG_ANIMATE_STATE, rootAnimateState);
 
-    /**
-     * @ngdoc object
-     * @name ngRoute.$route
-     * @requires $location
-     * @requires $routeParams
-     *
-     * @property {Object} current Reference to the current route definition.
-     * The route definition contains:
-     *
-     *   - `controller`: The controller constructor as define in route definition.
-     *   - `locals`: A map of locals which is used by {@link ng.$controller $controller} service for
-     *     controller instantiation. The `locals` contain
-     *     the resolved values of the `resolve` map. Additionally the `locals` also contain:
-     *
-     *     - `$scope` - The current route scope.
-     *     - `$template` - The current route template HTML.
-     *
-     * @property {Array.<Object>} routes Array of all configured routes.
-     *
-     * @description
-     * `$route` is used for deep-linking URLs to controllers and views (HTML partials).
-     * It watches `$location.url()` and tries to map the path to an existing route definition.
-     *
-     * Requires the {@link ngRoute `ngRoute`} module to be installed.
-     *
-     * You can define routes through {@link ngRoute.$routeProvider $routeProvider}'s API.
-     *
-     * The `$route` service is typically used in conjunction with the
-     * {@link ngRoute.directive:ngView `ngView`} directive and the
-     * {@link ngRoute.$routeParams `$routeParams`} service.
-     *
-     * @example
-       This example shows how changing the URL hash causes the `$route` to match a route against the
-       URL, and the `ngView` pulls in the partial.
+      function lookup(name) {
+        if (name) {
+          var matches = [],
+              flagMap = {},
+              classes = name.substr(1).split('.');
 
-       Note that this example is using {@link ng.directive:script inlined templates}
-       to get it working on jsfiddle as well.
-
-     <example module="ngViewExample" deps="angular-route.js">
-       <file name="index.html">
-         <div ng-controller="MainCntl">
-           Choose:
-           <a href="Book/Moby">Moby</a> |
-           <a href="Book/Moby/ch/1">Moby: Ch1</a> |
-           <a href="Book/Gatsby">Gatsby</a> |
-           <a href="Book/Gatsby/ch/4?key=value">Gatsby: Ch4</a> |
-           <a href="Book/Scarlet">Scarlet Letter</a><br/>
-
-           <div ng-view></div>
-           <hr />
-
-           <pre>$location.path() = {{$location.path()}}</pre>
-           <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
-           <pre>$route.current.params = {{$route.current.params}}</pre>
-           <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre>
-           <pre>$routeParams = {{$routeParams}}</pre>
-         </div>
-       </file>
-
-       <file name="book.html">
-         controller: {{name}}<br />
-         Book Id: {{params.bookId}}<br />
-       </file>
-
-       <file name="chapter.html">
-         controller: {{name}}<br />
-         Book Id: {{params.bookId}}<br />
-         Chapter Id: {{params.chapterId}}
-       </file>
-
-       <file name="script.js">
-         angular.module('ngViewExample', ['ngRoute'])
-
-         .config(function($routeProvider, $locationProvider) {
-           $routeProvider.when('/Book/:bookId', {
-             templateUrl: 'book.html',
-             controller: BookCntl,
-             resolve: {
-               // I will cause a 1 second delay
-               delay: function($q, $timeout) {
-                 var delay = $q.defer();
-                 $timeout(delay.resolve, 1000);
-                 return delay.promise;
-               }
-             }
-           });
-           $routeProvider.when('/Book/:bookId/ch/:chapterId', {
-             templateUrl: 'chapter.html',
-             controller: ChapterCntl
-           });
-
-           // configure html5 to get links working on jsfiddle
-           $locationProvider.html5Mode(true);
-         });
-
-         function MainCntl($scope, $route, $routeParams, $location) {
-           $scope.$route = $route;
-           $scope.$location = $location;
-           $scope.$routeParams = $routeParams;
-         }
-
-         function BookCntl($scope, $routeParams) {
-           $scope.name = "BookCntl";
-           $scope.params = $routeParams;
-         }
-
-         function ChapterCntl($scope, $routeParams) {
-           $scope.name = "ChapterCntl";
-           $scope.params = $routeParams;
-         }
-       </file>
-
-       <file name="scenario.js">
-         it('should load and compile correct template', function() {
-           element('a:contains("Moby: Ch1")').click();
-           var content = element('.doc-example-live [ng-view]').text();
-           expect(content).toMatch(/controller\: ChapterCntl/);
-           expect(content).toMatch(/Book Id\: Moby/);
-           expect(content).toMatch(/Chapter Id\: 1/);
-
-           element('a:contains("Scarlet")').click();
-           sleep(2); // promises are not part of scenario waiting
-           content = element('.doc-example-live [ng-view]').text();
-           expect(content).toMatch(/controller\: BookCntl/);
-           expect(content).toMatch(/Book Id\: Scarlet/);
-         });
-       </file>
-     </example>
-     */
-
-    /**
-     * @ngdoc event
-     * @name ngRoute.$route#$routeChangeStart
-     * @eventOf ngRoute.$route
-     * @eventType broadcast on root scope
-     * @description
-     * Broadcasted before a route change. At this  point the route services starts
-     * resolving all of the dependencies needed for the route change to occurs.
-     * Typically this involves fetching the view template as well as any dependencies
-     * defined in `resolve` route property. Once  all of the dependencies are resolved
-     * `$routeChangeSuccess` is fired.
-     *
-     * @param {Object} angularEvent Synthetic event object.
-     * @param {Route} next Future route information.
-     * @param {Route} current Current route information.
-     */
-
-    /**
-     * @ngdoc event
-     * @name ngRoute.$route#$routeChangeSuccess
-     * @eventOf ngRoute.$route
-     * @eventType broadcast on root scope
-     * @description
-     * Broadcasted after a route dependencies are resolved.
-     * {@link ngRoute.directive:ngView ngView} listens for the directive
-     * to instantiate the controller and render the view.
-     *
-     * @param {Object} angularEvent Synthetic event object.
-     * @param {Route} current Current route information.
-     * @param {Route|Undefined} previous Previous route information, or undefined if current is
-     * first route entered.
-     */
-
-    /**
-     * @ngdoc event
-     * @name ngRoute.$route#$routeChangeError
-     * @eventOf ngRoute.$route
-     * @eventType broadcast on root scope
-     * @description
-     * Broadcasted if any of the resolve promises are rejected.
-     *
-     * @param {Object} angularEvent Synthetic event object
-     * @param {Route} current Current route information.
-     * @param {Route} previous Previous route information.
-     * @param {Route} rejection Rejection of the promise. Usually the error of the failed promise.
-     */
-
-    /**
-     * @ngdoc event
-     * @name ngRoute.$route#$routeUpdate
-     * @eventOf ngRoute.$route
-     * @eventType broadcast on root scope
-     * @description
-     *
-     * The `reloadOnSearch` property has been set to false, and we are reusing the same
-     * instance of the Controller.
-     */
-
-    var forceReload = false,
-        $route = {
-          routes: routes,
-
-          /**
-           * @ngdoc method
-           * @name ngRoute.$route#reload
-           * @methodOf ngRoute.$route
-           *
-           * @description
-           * Causes `$route` service to reload the current route even if
-           * {@link ng.$location $location} hasn't changed.
-           *
-           * As a result of that, {@link ngRoute.directive:ngView ngView}
-           * creates new scope, reinstantiates the controller.
-           */
-          reload: function() {
-            forceReload = true;
-            $rootScope.$evalAsync(updateRoute);
+          //the empty string value is the default animation
+          //operation which performs CSS transition and keyframe
+          //animations sniffing. This is always included for each
+          //element animation procedure if the browser supports
+          //transitions and/or keyframe animations
+          if ($sniffer.transitions || $sniffer.animations) {
+            classes.push('');
           }
-        };
 
-    $rootScope.$on('$locationChangeSuccess', updateRoute);
-
-    return $route;
-
-    /////////////////////////////////////////////////////
-
-    /**
-     * @param on {string} current url
-     * @param route {Object} route regexp to match the url against
-     * @return {?Object}
-     *
-     * @description
-     * Check if the route matches the current url.
-     *
-     * Inspired by match in
-     * visionmedia/express/lib/router/router.js.
-     */
-    function switchRouteMatcher(on, route) {
-      var keys = route.keys,
-          params = {};
-
-      if (!route.regexp) return null;
-
-      var m = route.regexp.exec(on);
-      if (!m) return null;
-
-      for (var i = 1, len = m.length; i < len; ++i) {
-        var key = keys[i - 1];
-
-        var val = 'string' == typeof m[i]
-              ? decodeURIComponent(m[i])
-              : m[i];
-
-        if (key && val) {
-          params[key.name] = val;
+          for(var i=0; i < classes.length; i++) {
+            var klass = classes[i],
+                selectorFactoryName = selectors[klass];
+            if(selectorFactoryName && !flagMap[klass]) {
+              matches.push($injector.get(selectorFactoryName));
+              flagMap[klass] = true;
+            }
+          }
+          return matches;
         }
       }
-      return params;
-    }
 
-    function updateRoute() {
-      var next = parseRoute(),
-          last = $route.current;
+      /**
+       * @ngdoc object
+       * @name ngAnimate.$animate
+       * @requires $timeout, $sniffer, $rootElement
+       * @function
+       *
+       * @description
+       * The `$animate` service provides animation detection support while performing DOM operations (enter, leave and move)
+       * as well as during addClass and removeClass operations. When any of these operations are run, the $animate service
+       * will examine any JavaScript-defined animations (which are defined by using the $animateProvider provider object)
+       * as well as any CSS-defined animations against the CSS classes present on the element once the DOM operation is run.
+       *
+       * The `$animate` service is used behind the scenes with pre-existing directives and animation with these directives
+       * will work out of the box without any extra configuration.
+       *
+       * Requires the {@link ngAnimate `ngAnimate`} module to be installed.
+       *
+       * Please visit the {@link ngAnimate `ngAnimate`} module overview page learn more about how to use animations in your application.
+       *
+       */
+      return {
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#enter
+         * @methodOf ngAnimate.$animate
+         * @function
+         *
+         * @description
+         * Appends the element to the parent element that resides in the document and then runs the enter animation. Once
+         * the animation is started, the following CSS classes will be present on the element for the duration of the animation:
+         *
+         * Below is a breakdown of each step that occurs during enter animation:
+         *
+         * | Animation Step                                                                               | What the element class attribute looks like   |
+         * |----------------------------------------------------------------------------------------------|-----------------------------------------------|
+         * | 1. $animate.enter(...) is called                                                             | class="my-animation"                          |
+         * | 2. element is inserted into the parent element or beside the after element                   | class="my-animation"                          |
+         * | 3. $animate runs any JavaScript-defined animations on the element                            | class="my-animation"                          |
+         * | 4. the .ng-enter class is added to the element                                               | class="my-animation ng-enter"                 |
+         * | 5. $animate scans the element styles to get the CSS transition/animation duration and delay  | class="my-animation ng-enter"                 |
+         * | 6. the .ng-enter-active class is added (this triggers the CSS transition/animation)          | class="my-animation ng-enter ng-enter-active" |
+         * | 7. $animate waits for X milliseconds for the animation to complete                           | class="my-animation ng-enter ng-enter-active" |
+         * | 8. The animation ends and both CSS classes are removed from the element                      | class="my-animation"                          |
+         * | 9. The done() callback is fired (if provided)                                                | class="my-animation"                          |
+         *
+         * @param {jQuery/jqLite element} element the element that will be the focus of the enter animation
+         * @param {jQuery/jqLite element} parent the parent element of the element that will be the focus of the enter animation
+         * @param {jQuery/jqLite element} after the sibling element (which is the previous element) of the element that will be the focus of the enter animation
+         * @param {function()=} done callback function that will be called once the animation is complete
+        */
+        enter : function(element, parent, after, done) {
+          this.enabled(false, element);
+          $delegate.enter(element, parent, after);
+          $rootScope.$$postDigest(function() {
+            performAnimation('enter', 'ng-enter', element, parent, after, function() {
+              done && $timeout(done, 0, false);
+            });
+          });
+        },
 
-      if (next && last && next.$$route === last.$$route
-          && angular.equals(next.pathParams, last.pathParams)
-          && !next.reloadOnSearch && !forceReload) {
-        last.params = next.params;
-        angular.copy(last.params, $routeParams);
-        $rootScope.$broadcast('$routeUpdate', last);
-      } else if (next || last) {
-        forceReload = false;
-        $rootScope.$broadcast('$routeChangeStart', next, last);
-        $route.current = next;
-        if (next) {
-          if (next.redirectTo) {
-            if (angular.isString(next.redirectTo)) {
-              $location.path(interpolate(next.redirectTo, next.params)).search(next.params)
-                       .replace();
-            } else {
-              $location.url(next.redirectTo(next.pathParams, $location.path(), $location.search()))
-                       .replace();
-            }
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#leave
+         * @methodOf ngAnimate.$animate
+         * @function
+         *
+         * @description
+         * Runs the leave animation operation and, upon completion, removes the element from the DOM. Once
+         * the animation is started, the following CSS classes will be added for the duration of the animation:
+         *
+         * Below is a breakdown of each step that occurs during enter animation:
+         *
+         * | Animation Step                                                                               | What the element class attribute looks like  |
+         * |----------------------------------------------------------------------------------------------|----------------------------------------------|
+         * | 1. $animate.leave(...) is called                                                             | class="my-animation"                         |
+         * | 2. $animate runs any JavaScript-defined animations on the element                            | class="my-animation"                         |
+         * | 3. the .ng-leave class is added to the element                                               | class="my-animation ng-leave"                |
+         * | 4. $animate scans the element styles to get the CSS transition/animation duration and delay  | class="my-animation ng-leave"                |
+         * | 5. the .ng-leave-active class is added (this triggers the CSS transition/animation)          | class="my-animation ng-leave ng-leave-active |
+         * | 6. $animate waits for X milliseconds for the animation to complete                           | class="my-animation ng-leave ng-leave-active |
+         * | 7. The animation ends and both CSS classes are removed from the element                      | class="my-animation"                         |
+         * | 8. The element is removed from the DOM                                                       | ...                                          |
+         * | 9. The done() callback is fired (if provided)                                                | ...                                          |
+         *
+         * @param {jQuery/jqLite element} element the element that will be the focus of the leave animation
+         * @param {function()=} done callback function that will be called once the animation is complete
+        */
+        leave : function(element, done) {
+          cancelChildAnimations(element);
+          this.enabled(false, element);
+          $rootScope.$$postDigest(function() {
+            performAnimation('leave', 'ng-leave', element, null, null, function() {
+              $delegate.leave(element, done);
+            });
+          });
+        },
+
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#move
+         * @methodOf ngAnimate.$animate
+         * @function
+         *
+         * @description
+         * Fires the move DOM operation. Just before the animation starts, the animate service will either append it into the parent container or
+         * add the element directly after the after element if present. Then the move animation will be run. Once
+         * the animation is started, the following CSS classes will be added for the duration of the animation:
+         *
+         * Below is a breakdown of each step that occurs during move animation:
+         *
+         * | Animation Step                                                                               | What the element class attribute looks like |
+         * |----------------------------------------------------------------------------------------------|---------------------------------------------|
+         * | 1. $animate.move(...) is called                                                              | class="my-animation"                        |
+         * | 2. element is moved into the parent element or beside the after element                      | class="my-animation"                        |
+         * | 3. $animate runs any JavaScript-defined animations on the element                            | class="my-animation"                        |
+         * | 4. the .ng-move class is added to the element                                                | class="my-animation ng-move"                |
+         * | 5. $animate scans the element styles to get the CSS transition/animation duration and delay  | class="my-animation ng-move"                |
+         * | 6. the .ng-move-active class is added (this triggers the CSS transition/animation)           | class="my-animation ng-move ng-move-active" |
+         * | 7. $animate waits for X milliseconds for the animation to complete                           | class="my-animation ng-move ng-move-active" |
+         * | 8. The animation ends and both CSS classes are removed from the element                      | class="my-animation"                        |
+         * | 9. The done() callback is fired (if provided)                                                | class="my-animation"                        |
+         *
+         * @param {jQuery/jqLite element} element the element that will be the focus of the move animation
+         * @param {jQuery/jqLite element} parent the parent element of the element that will be the focus of the move animation
+         * @param {jQuery/jqLite element} after the sibling element (which is the previous element) of the element that will be the focus of the move animation
+         * @param {function()=} done callback function that will be called once the animation is complete
+        */
+        move : function(element, parent, after, done) {
+          cancelChildAnimations(element);
+          this.enabled(false, element);
+          $delegate.move(element, parent, after);
+          $rootScope.$$postDigest(function() {
+            performAnimation('move', 'ng-move', element, null, null, function() {
+              done && $timeout(done, 0, false);
+            });
+          });
+        },
+
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#addClass
+         * @methodOf ngAnimate.$animate
+         *
+         * @description
+         * Triggers a custom animation event based off the className variable and then attaches the className value to the element as a CSS class.
+         * Unlike the other animation methods, the animate service will suffix the className value with {@type -add} in order to provide
+         * the animate service the setup and active CSS classes in order to trigger the animation (this will be skipped if no CSS transitions
+         * or keyframes are defined on the -add CSS class).
+         *
+         * Below is a breakdown of each step that occurs during addClass animation:
+         *
+         * | Animation Step                                                                                 | What the element class attribute looks like |
+         * |------------------------------------------------------------------------------------------------|---------------------------------------------|
+         * | 1. $animate.addClass(element, 'super') is called                                               | class=""                                    |
+         * | 2. $animate runs any JavaScript-defined animations on the element                              | class=""                                    |
+         * | 3. the .super-add class is added to the element                                                | class="super-add"                           |
+         * | 4. $animate scans the element styles to get the CSS transition/animation duration and delay    | class="super-add"                           |
+         * | 5. the .super-add-active class is added (this triggers the CSS transition/animation)           | class="super-add super-add-active"          |
+         * | 6. $animate waits for X milliseconds for the animation to complete                             | class="super-add super-add-active"          |
+         * | 7. The animation ends and both CSS classes are removed from the element                        | class=""                                    |
+         * | 8. The super class is added to the element                                                     | class="super"                               |
+         * | 9. The done() callback is fired (if provided)                                                  | class="super"                               |
+         *
+         * @param {jQuery/jqLite element} element the element that will be animated
+         * @param {string} className the CSS class that will be animated and then attached to the element
+         * @param {function()=} done callback function that will be called once the animation is complete
+        */
+        addClass : function(element, className, done) {
+          performAnimation('addClass', className, element, null, null, function() {
+            $delegate.addClass(element, className, done);
+          });
+        },
+
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#removeClass
+         * @methodOf ngAnimate.$animate
+         *
+         * @description
+         * Triggers a custom animation event based off the className variable and then removes the CSS class provided by the className value
+         * from the element. Unlike the other animation methods, the animate service will suffix the className value with {@type -remove} in
+         * order to provide the animate service the setup and active CSS classes in order to trigger the animation (this will be skipped if
+         * no CSS transitions or keyframes are defined on the -remove CSS class).
+         *
+         * Below is a breakdown of each step that occurs during removeClass animation:
+         *
+         * | Animation Step                                                                                | What the element class attribute looks like     |
+         * |-----------------------------------------------------------------------------------------------|-------------------------------------------------|
+         * | 1. $animate.removeClass(element, 'super') is called                                           | class="super"                                   |
+         * | 2. $animate runs any JavaScript-defined animations on the element                             | class="super"                                   |
+         * | 3. the .super-remove class is added to the element                                            | class="super super-remove"                      |
+         * | 4. $animate scans the element styles to get the CSS transition/animation duration and delay   | class="super super-remove"                      |
+         * | 5. the .super-remove-active class is added (this triggers the CSS transition/animation)       | class="super super-remove super-remove-active"  |
+         * | 6. $animate waits for X milliseconds for the animation to complete                            | class="super super-remove super-remove-active"  |
+         * | 7. The animation ends and both CSS all three classes are removed from the element             | class=""                                        |
+         * | 8. The done() callback is fired (if provided)                                                 | class=""                                        |
+         *
+         * @param {jQuery/jqLite element} element the element that will be animated
+         * @param {string} className the CSS class that will be animated and then removed from the element
+         * @param {function()=} done callback function that will be called once the animation is complete
+        */
+        removeClass : function(element, className, done) {
+          performAnimation('removeClass', className, element, null, null, function() {
+            $delegate.removeClass(element, className, done);
+          });
+        },
+
+        /**
+         * @ngdoc function
+         * @name ngAnimate.$animate#enabled
+         * @methodOf ngAnimate.$animate
+         * @function
+         *
+         * @param {boolean=} value If provided then set the animation on or off.
+         * @return {boolean} Current animation state.
+         *
+         * @description
+         * Globally enables/disables animations.
+         *
+        */
+        enabled : function(value, element) {
+          switch(arguments.length) {
+            case 2:
+              if(value) {
+                cleanup(element);
+              }
+              else {
+                var data = element.data(NG_ANIMATE_STATE) || {};
+                data.structural = true;
+                data.running = true;
+                element.data(NG_ANIMATE_STATE, data);
+              }
+            break;
+
+            case 1:
+              rootAnimateState.running = !value;
+            break;
+
+            default:
+              value = !rootAnimateState.running
+            break;
           }
+          return !!value;
+         }
+      };
+
+      /*
+        all animations call this shared animation triggering function internally.
+        The event variable refers to the JavaScript animation event that will be triggered
+        and the className value is the name of the animation that will be applied within the
+        CSS code. Element, parent and after are provided DOM elements for the animation
+        and the onComplete callback will be fired once the animation is fully complete.
+      */
+      function performAnimation(event, className, element, parent, after, onComplete) {
+        var classes = (element.attr('class') || '') + ' ' + className;
+        var animationLookup = (' ' + classes).replace(/\s+/g,'.'),
+            animations = [];
+        forEach(lookup(animationLookup), function(animation, index) {
+          animations.push({
+            start : animation[event]
+          });
+        });
+
+        if (!parent) {
+          parent = after ? after.parent() : element.parent();
+        }
+        var disabledAnimation = { running : true };
+
+        //skip the animation if animations are disabled, a parent is already being animated
+        //or the element is not currently attached to the document body.
+        if ((parent.inheritedData(NG_ANIMATE_STATE) || disabledAnimation).running || animations.length == 0) {
+          done();
+          return;
         }
 
-        $q.when(next).
-          then(function() {
-            if (next) {
-              var locals = angular.extend({}, next.resolve),
-                  template, templateUrl;
+        var ngAnimateState = element.data(NG_ANIMATE_STATE) || {};
 
-              angular.forEach(locals, function(value, key) {
-                locals[key] = angular.isString(value) ?
-                    $injector.get(value) : $injector.invoke(value);
-              });
+        var isClassBased = event == 'addClass' || event == 'removeClass';
+        if(ngAnimateState.running) {
+          if(isClassBased && ngAnimateState.structural) {
+            onComplete && onComplete();
+            return;
+          }
 
-              if (angular.isDefined(template = next.template)) {
-                if (angular.isFunction(template)) {
-                  template = template(next.params);
-                }
-              } else if (angular.isDefined(templateUrl = next.templateUrl)) {
-                if (angular.isFunction(templateUrl)) {
-                  templateUrl = templateUrl(next.params);
-                }
-                templateUrl = $sce.getTrustedResourceUrl(templateUrl);
-                if (angular.isDefined(templateUrl)) {
-                  next.loadedTemplateUrl = templateUrl;
-                  template = $http.get(templateUrl, {cache: $templateCache}).
-                      then(function(response) { return response.data; });
-                }
+          //if an animation is currently running on the element then lets take the steps
+          //to cancel that animation and fire any required callbacks
+          $timeout.cancel(ngAnimateState.flagTimer);
+          cancelAnimations(ngAnimateState.animations);
+          (ngAnimateState.done || noop)();
+        }
+
+        element.data(NG_ANIMATE_STATE, {
+          running:true,
+          structural:!isClassBased,
+          animations:animations,
+          done:done
+        });
+
+        //the ng-animate class does nothing, but it's here to allow for
+        //parent animations to find and cancel child animations when needed
+        element.addClass(NG_ANIMATE_CLASS_NAME);
+
+        forEach(animations, function(animation, index) {
+          var fn = function() {
+            progress(index);
+          };
+
+          if(animation.start) {
+            animation.endFn = isClassBased ?
+              animation.start(element, className, fn) :
+              animation.start(element, fn);
+          } else {
+            fn();
+          }
+        });
+
+        function progress(index) {
+          animations[index].done = true;
+          (animations[index].endFn || noop)();
+          for(var i=0;i<animations.length;i++) {
+            if(!animations[i].done) return;
+          }
+          done();
+        }
+
+        function done() {
+          if(!done.hasBeenRun) {
+            done.hasBeenRun = true;
+            var data = element.data(NG_ANIMATE_STATE);
+            if(data) {
+              /* only structural animations wait for reflow before removing an
+                 animation, but class-based animations don't. An example of this
+                 failing would be when a parent HTML tag has a ng-class attribute
+                 causing ALL directives below to skip animations during the digest */
+              if(isClassBased) {
+                cleanup(element);
+              } else {
+                data.flagTimer = $timeout(function() {
+                  cleanup(element);
+                }, 0, false);
+                element.data(NG_ANIMATE_STATE, data);
               }
-              if (angular.isDefined(template)) {
-                locals['$template'] = template;
-              }
-              return $q.all(locals);
             }
-          }).
-          // after route change
-          then(function(locals) {
-            if (next == $route.current) {
-              if (next) {
-                next.locals = locals;
-                angular.copy(next.params, $routeParams);
+            (onComplete || noop)();
+          }
+        }
+      }
+
+      function cancelChildAnimations(element) {
+        angular.forEach(element[0].querySelectorAll('.' + NG_ANIMATE_CLASS_NAME), function(element) {
+          element = angular.element(element);
+          var data = element.data(NG_ANIMATE_STATE);
+          if(data) {
+            cancelAnimations(data.animations);
+            cleanup(element);
+          }
+        });
+      }
+
+      function cancelAnimations(animations) {
+        var isCancelledFlag = true;
+        forEach(animations, function(animation) {
+          (animation.endFn || noop)(isCancelledFlag);
+        });
+      }
+
+      function cleanup(element) {
+        element.removeClass(NG_ANIMATE_CLASS_NAME);
+        element.removeData(NG_ANIMATE_STATE);
+      }
+    }]);
+
+    $animateProvider.register('', ['$window', '$sniffer', '$timeout', function($window, $sniffer, $timeout) {
+      var forEach = angular.forEach;
+
+      // Detect proper transitionend/animationend event names.
+      var transitionProp, transitionendEvent, animationProp, animationendEvent;
+
+      // If unprefixed events are not supported but webkit-prefixed are, use the latter.
+      // Otherwise, just use W3C names, browsers not supporting them at all will just ignore them.
+      // Note: Chrome implements `window.onwebkitanimationend` and doesn't implement `window.onanimationend`
+      // but at the same time dispatches the `animationend` event and not `webkitAnimationEnd`.
+      // Register both events in case `window.onanimationend` is not supported because of that,
+      // do the same for `transitionend` as Safari is likely to exhibit similar behavior.
+      // Also, the only modern browser that uses vendor prefixes for transitions/keyframes is webkit
+      // therefore there is no reason to test anymore for other vendor prefixes: http://caniuse.com/#search=transition
+      if (window.ontransitionend === undefined && window.onwebkittransitionend !== undefined) {
+        transitionProp = 'WebkitTransition';
+        transitionendEvent = 'webkitTransitionEnd transitionend';
+      } else {
+        transitionProp = 'transition';
+        transitionendEvent = 'transitionend';
+      }
+
+      if (window.onanimationend === undefined && window.onwebkitanimationend !== undefined) {
+        animationProp = 'WebkitAnimation';
+        animationendEvent = 'webkitAnimationEnd animationend';
+      } else {
+        animationProp = 'animation';
+        animationendEvent = 'animationend';
+      }
+
+      var durationKey = 'Duration',
+          propertyKey = 'Property',
+          delayKey = 'Delay',
+          animationIterationCountKey = 'IterationCount',
+          ELEMENT_NODE = 1;
+
+      var NG_ANIMATE_PARENT_KEY = '$ngAnimateKey';
+      var lookupCache = {};
+      var parentCounter = 0;
+
+      var animationReflowQueue = [], animationTimer, timeOut = false;
+      function afterReflow(callback) {
+        animationReflowQueue.push(callback);
+        $timeout.cancel(animationTimer);
+        animationTimer = $timeout(function() {
+          angular.forEach(animationReflowQueue, function(fn) {
+            fn();
+          });
+          animationReflowQueue = [];
+          animationTimer = null;
+          lookupCache = {};
+        }, 10, false);
+      }
+
+      function getElementAnimationDetails(element, cacheKey, onlyCheckTransition) {
+        var data = lookupCache[cacheKey];
+        if(!data) {
+          var transitionDuration = 0, transitionDelay = 0,
+              animationDuration = 0, animationDelay = 0;
+
+          //we want all the styles defined before and after
+          forEach(element, function(element) {
+            if (element.nodeType == ELEMENT_NODE) {
+              var elementStyles = $window.getComputedStyle(element) || {};
+
+              transitionDuration = Math.max(parseMaxTime(elementStyles[transitionProp + durationKey]), transitionDuration);
+
+              if(!onlyCheckTransition) {
+                transitionDelay  = Math.max(parseMaxTime(elementStyles[transitionProp + delayKey]), transitionDelay);
+
+                animationDelay   = Math.max(parseMaxTime(elementStyles[animationProp + delayKey]), animationDelay);
+
+                var aDuration  = parseMaxTime(elementStyles[animationProp + durationKey]);
+
+                if(aDuration > 0) {
+                  aDuration *= parseInt(elementStyles[animationProp + animationIterationCountKey]) || 1;
+                }
+
+                animationDuration = Math.max(aDuration, animationDuration);
               }
-              $rootScope.$broadcast('$routeChangeSuccess', next, last);
-            }
-          }, function(error) {
-            if (next == $route.current) {
-              $rootScope.$broadcast('$routeChangeError', next, last, error);
             }
           });
+          data = {
+            transitionDelay : transitionDelay,
+            animationDelay : animationDelay,
+            transitionDuration : transitionDuration,
+            animationDuration : animationDuration
+          };
+          lookupCache[cacheKey] = data;
+        }
+        return data;
       }
-    }
 
-
-    /**
-     * @returns the current active route, by matching it against the URL
-     */
-    function parseRoute() {
-      // Match a route
-      var params, match;
-      angular.forEach(routes, function(route, path) {
-        if (!match && (params = switchRouteMatcher($location.path(), route))) {
-          match = inherit(route, {
-            params: angular.extend({}, $location.search(), params),
-            pathParams: params});
-          match.$$route = route;
-        }
-      });
-      // No route matched; fallback to "otherwise" route
-      return match || routes[null] && inherit(routes[null], {params: {}, pathParams:{}});
-    }
-
-    /**
-     * @returns interpolation of the redirect path with the parameters
-     */
-    function interpolate(string, params) {
-      var result = [];
-      angular.forEach((string||'').split(':'), function(segment, i) {
-        if (i === 0) {
-          result.push(segment);
-        } else {
-          var segmentMatch = segment.match(/(\w+)(.*)/);
-          var key = segmentMatch[1];
-          result.push(params[key]);
-          result.push(segmentMatch[2] || '');
-          delete params[key];
-        }
-      });
-      return result.join('');
-    }
-  }];
-}
-
-ngRouteModule.provider('$routeParams', $RouteParamsProvider);
-
-
-/**
- * @ngdoc object
- * @name ngRoute.$routeParams
- * @requires $route
- *
- * @description
- * The `$routeParams` service allows you to retrieve the current set of route parameters.
- *
- * Requires the {@link ngRoute `ngRoute`} module to be installed.
- *
- * The route parameters are a combination of {@link ng.$location `$location`}'s
- * {@link ng.$location#methods_search `search()`} and {@link ng.$location#methods_path `path()`}.
- * The `path` parameters are extracted when the {@link ngRoute.$route `$route`} path is matched.
- *
- * In case of parameter name collision, `path` params take precedence over `search` params.
- *
- * The service guarantees that the identity of the `$routeParams` object will remain unchanged
- * (but its properties will likely change) even when a route change occurs.
- *
- * Note that the `$routeParams` are only updated *after* a route change completes successfully.
- * This means that you cannot rely on `$routeParams` being correct in route resolve functions.
- * Instead you can use `$route.current.params` to access the new route's parameters.
- *
- * @example
- * <pre>
- *  // Given:
- *  // URL: http://server.com/index.html#/Chapter/1/Section/2?search=moby
- *  // Route: /Chapter/:chapterId/Section/:sectionId
- *  //
- *  // Then
- *  $routeParams ==> {chapterId:1, sectionId:2, search:'moby'}
- * </pre>
- */
-function $RouteParamsProvider() {
-  this.$get = function() { return {}; };
-}
-
-ngRouteModule.directive('ngView', ngViewFactory);
-
-/**
- * @ngdoc directive
- * @name ngRoute.directive:ngView
- * @restrict ECA
- *
- * @description
- * # Overview
- * `ngView` is a directive that complements the {@link ngRoute.$route $route} service by
- * including the rendered template of the current route into the main layout (`index.html`) file.
- * Every time the current route changes, the included view changes with it according to the
- * configuration of the `$route` service.
- *
- * Requires the {@link ngRoute `ngRoute`} module to be installed.
- *
- * @animations
- * enter - animation is used to bring new content into the browser.
- * leave - animation is used to animate existing content away.
- *
- * The enter and leave animation occur concurrently.
- *
- * @scope
- * @priority 400
- * @example
-    <example module="ngViewExample" deps="angular-route.js" animations="true">
-      <file name="index.html">
-        <div ng-controller="MainCntl as main">
-          Choose:
-          <a href="Book/Moby">Moby</a> |
-          <a href="Book/Moby/ch/1">Moby: Ch1</a> |
-          <a href="Book/Gatsby">Gatsby</a> |
-          <a href="Book/Gatsby/ch/4?key=value">Gatsby: Ch4</a> |
-          <a href="Book/Scarlet">Scarlet Letter</a><br/>
-
-          <div class="view-animate-container">
-            <div ng-view class="view-animate"></div>
-          </div>
-          <hr />
-
-          <pre>$location.path() = {{main.$location.path()}}</pre>
-          <pre>$route.current.templateUrl = {{main.$route.current.templateUrl}}</pre>
-          <pre>$route.current.params = {{main.$route.current.params}}</pre>
-          <pre>$route.current.scope.name = {{main.$route.current.scope.name}}</pre>
-          <pre>$routeParams = {{main.$routeParams}}</pre>
-        </div>
-      </file>
-
-      <file name="book.html">
-        <div>
-          controller: {{book.name}}<br />
-          Book Id: {{book.params.bookId}}<br />
-        </div>
-      </file>
-
-      <file name="chapter.html">
-        <div>
-          controller: {{chapter.name}}<br />
-          Book Id: {{chapter.params.bookId}}<br />
-          Chapter Id: {{chapter.params.chapterId}}
-        </div>
-      </file>
-
-      <file name="animations.css">
-        .view-animate-container {
-          position:relative;
-          height:100px!important;
-          position:relative;
-          background:white;
-          border:1px solid black;
-          height:40px;
-          overflow:hidden;
-        }
-
-        .view-animate {
-          padding:10px;
-        }
-
-        .view-animate.ng-enter, .view-animate.ng-leave {
-          -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
-          transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
-
-          display:block;
-          width:100%;
-          border-left:1px solid black;
-
-          position:absolute;
-          top:0;
-          left:0;
-          right:0;
-          bottom:0;
-          padding:10px;
-        }
-
-        .view-animate.ng-enter {
-          left:100%;
-        }
-        .view-animate.ng-enter.ng-enter-active {
-          left:0;
-        }
-        .view-animate.ng-leave.ng-leave-active {
-          left:-100%;
-        }
-      </file>
-
-      <file name="script.js">
-        angular.module('ngViewExample', ['ngRoute', 'ngAnimate'],
-          function($routeProvider, $locationProvider) {
-            $routeProvider.when('/Book/:bookId', {
-              templateUrl: 'book.html',
-              controller: BookCntl,
-              controllerAs: 'book'
-            });
-            $routeProvider.when('/Book/:bookId/ch/:chapterId', {
-              templateUrl: 'chapter.html',
-              controller: ChapterCntl,
-              controllerAs: 'chapter'
-            });
-
-            // configure html5 to get links working on jsfiddle
-            $locationProvider.html5Mode(true);
+      function parseMaxTime(str) {
+        var total = 0, values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
+        forEach(values, function(value) {
+          total = Math.max(parseFloat(value) || 0, total);
         });
+        return total;
+      }
 
-        function MainCntl($route, $routeParams, $location) {
-          this.$route = $route;
-          this.$location = $location;
-          this.$routeParams = $routeParams;
+      function getCacheKey(element) {
+        var parent = element.parent();
+        var parentID = parent.data(NG_ANIMATE_PARENT_KEY);
+        if(!parentID) {
+          parent.data(NG_ANIMATE_PARENT_KEY, ++parentCounter);
+          parentID = parentCounter;
+        }
+        return parentID + '-' + element[0].className;
+      }
+
+      function animate(element, className, done) {
+
+        var cacheKey = getCacheKey(element);
+        if(getElementAnimationDetails(element, cacheKey, true).transitionDuration > 0) {
+
+          done();
+          return;
         }
 
-        function BookCntl($routeParams) {
-          this.name = "BookCntl";
-          this.params = $routeParams;
+        element.addClass(className);
+
+        var timings = getElementAnimationDetails(element, cacheKey + ' ' + className);
+
+        /* there is no point in performing a reflow if the animation
+           timeout is empty (this would cause a flicker bug normally
+           in the page. There is also no point in performing an animation
+           that only has a delay and no duration */
+        var maxDuration = Math.max(timings.transitionDuration, timings.animationDuration);
+        if(maxDuration > 0) {
+          var maxDelayTime = Math.max(timings.transitionDelay, timings.animationDelay) * 1000,
+              startTime = Date.now(),
+              node = element[0];
+
+          //temporarily disable the transition so that the enter styles
+          //don't animate twice (this is here to avoid a bug in Chrome/FF).
+          if(timings.transitionDuration > 0) {
+            node.style[transitionProp + propertyKey] = 'none';
+          }
+
+          var activeClassName = '';
+          forEach(className.split(' '), function(klass, i) {
+            activeClassName += (i > 0 ? ' ' : '') + klass + '-active';
+          });
+
+          // This triggers a reflow which allows for the transition animation to kick in.
+          var css3AnimationEvents = animationendEvent + ' ' + transitionendEvent;
+
+          afterReflow(function() {
+            if(timings.transitionDuration > 0) {
+              node.style[transitionProp + propertyKey] = '';
+            }
+            element.addClass(activeClassName);
+          });
+
+          element.on(css3AnimationEvents, onAnimationProgress);
+
+          // This will automatically be called by $animate so
+          // there is no need to attach this internally to the
+          // timeout done method.
+          return function onEnd(cancelled) {
+            element.off(css3AnimationEvents, onAnimationProgress);
+            element.removeClass(className);
+            element.removeClass(activeClassName);
+
+            // Only when the animation is cancelled is the done()
+            // function not called for this animation therefore
+            // this must be also called.
+            if(cancelled) {
+              done();
+            }
+          }
+        }
+        else {
+          element.removeClass(className);
+          done();
         }
 
-        function ChapterCntl($routeParams) {
-          this.name = "ChapterCntl";
-          this.params = $routeParams;
+        function onAnimationProgress(event) {
+          event.stopPropagation();
+          var ev = event.originalEvent || event;
+          var timeStamp = ev.$manualTimeStamp || ev.timeStamp || Date.now();
+          /* $manualTimeStamp is a mocked timeStamp value which is set
+           * within browserTrigger(). This is only here so that tests can
+           * mock animations properly. Real events fallback to event.timeStamp,
+           * or, if they don't, then a timeStamp is automatically created for them.
+           * We're checking to see if the timeStamp surpasses the expected delay,
+           * but we're using elapsedTime instead of the timeStamp on the 2nd
+           * pre-condition since animations sometimes close off early */
+          if(Math.max(timeStamp - startTime, 0) >= maxDelayTime && ev.elapsedTime >= maxDuration) {
+            done();
+          }
         }
-      </file>
 
-      <file name="scenario.js">
-        it('should load and compile correct template', function() {
-          element('a:contains("Moby: Ch1")').click();
-          var content = element('.doc-example-live [ng-view]').text();
-          expect(content).toMatch(/controller\: ChapterCntl/);
-          expect(content).toMatch(/Book Id\: Moby/);
-          expect(content).toMatch(/Chapter Id\: 1/);
+      }
 
-          element('a:contains("Scarlet")').click();
-          content = element('.doc-example-live [ng-view]').text();
-          expect(content).toMatch(/controller\: BookCntl/);
-          expect(content).toMatch(/Book Id\: Scarlet/);
+      return {
+        enter : function(element, done) {
+          return animate(element, 'ng-enter', done);
+        },
+        leave : function(element, done) {
+          return animate(element, 'ng-leave', done);
+        },
+        move : function(element, done) {
+          return animate(element, 'ng-move', done);
+        },
+        addClass : function(element, className, done) {
+          return animate(element, suffixClasses(className, '-add'), done);
+        },
+        removeClass : function(element, className, done) {
+          return animate(element, suffixClasses(className, '-remove'), done);
+        }
+      };
+
+      function suffixClasses(classes, suffix) {
+        var className = '';
+        classes = angular.isArray(classes) ? classes : classes.split(/\s+/);
+        forEach(classes, function(klass, i) {
+          if(klass && klass.length > 0) {
+            className += (i > 0 ? ' ' : '') + klass + suffix;
+          }
         });
-      </file>
-    </example>
- */
-
-
-/**
- * @ngdoc event
- * @name ngRoute.directive:ngView#$viewContentLoaded
- * @eventOf ngRoute.directive:ngView
- * @eventType emit on the current ngView scope
- * @description
- * Emitted every time the ngView content is reloaded.
- */
-ngViewFactory.$inject = ['$route', '$anchorScroll', '$compile', '$controller', '$animate'];
-function ngViewFactory(   $route,   $anchorScroll,   $compile,   $controller,   $animate) {
-  return {
-    restrict: 'ECA',
-    terminal: true,
-    priority: 400,
-    transclude: 'element',
-    link: function(scope, $element, attr, ctrl, $transclude) {
-        var currentScope,
-            currentElement,
-            autoScrollExp = attr.autoscroll,
-            onloadExp = attr.onload || '';
-
-        scope.$on('$routeChangeSuccess', update);
-        update();
-
-        function cleanupLastView() {
-          if (currentScope) {
-            currentScope.$destroy();
-            currentScope = null;
-          }
-          if(currentElement) {
-            $animate.leave(currentElement);
-            currentElement = null;
-          }
-        }
-
-        function update() {
-          var locals = $route.current && $route.current.locals,
-              template = locals && locals.$template;
-
-          if (template) {
-            var newScope = scope.$new();
-            $transclude(newScope, function(clone) {
-              clone.html(template);
-              $animate.enter(clone, null, currentElement || $element, function onNgViewEnter () {
-                if (angular.isDefined(autoScrollExp)
-                  && (!autoScrollExp || scope.$eval(autoScrollExp))) {
-                  $anchorScroll();
-                }
-              });
-
-              cleanupLastView();
-
-              var link = $compile(clone.contents()),
-                  current = $route.current;
-
-              currentScope = current.scope = newScope;
-              currentElement = clone;
-
-              if (current.controller) {
-                locals.$scope = currentScope;
-                var controller = $controller(current.controller, locals);
-                if (current.controllerAs) {
-                  currentScope[current.controllerAs] = controller;
-                }
-                clone.data('$ngControllerController', controller);
-                clone.children().data('$ngControllerController', controller);
-              }
-
-              link(currentScope);
-              currentScope.$emit('$viewContentLoaded');
-              currentScope.$eval(onloadExp);
-            });
-          } else {
-            cleanupLastView();
-          }
-        }
-    }
-  };
-}
+        return className;
+      }
+    }]);
+  }]);
 
 
 })(window, window.angular);
@@ -22228,7 +22193,7 @@ $ViewDirective.$inject = ['$state', '$compile', '$controller', '$injector', '$an
 function $ViewDirective(   $state,   $compile,   $controller,   $injector,   $anchorScroll) {
   // TODO: Change to $injector.has() when we version bump to Angular 1.1.5.
   // See: https://github.com/angular/angular.js/blob/master/CHANGELOG.md#115-triangle-squarification-2013-05-22
-  var $animator; try { $animator = $injector.get('$animator'); } catch (e) { /* do nothing */ }
+  var $animator; try { $animator = $injector.get('$animate'); } catch (e) { /* do nothing */ }
   var viewIsUpdating = false;
 
   var directive = {
@@ -22240,19 +22205,31 @@ function $ViewDirective(   $state,   $compile,   $controller,   $injector,   $an
         var viewScope, viewLocals,
             name = attr[directive.name] || attr.name || '',
             onloadExp = attr.onload || '',
-            animate = isDefined($animator) && $animator(scope, attr);
+            animate = $animator,
+            current;
 
         // Returns a set of DOM manipulation functions based on whether animation
         // should be performed
         var renderer = function(doAnimate) {
           return ({
             "true": {
-              remove: function(element) { animate.leave(element.contents(), element); },
-              restore: function(compiled, element) { animate.enter(compiled, element); },
+              remove: function(element) {
+                console.log('remove');
+                if(current)
+                  animate.leave(current);
+                current = null;
+              },
+              restore: function(compiled, element) {
+                console.log('restore');
+                //current
+                //animate.enter(current, null, element);
+              },
               populate: function(template, element) {
-                var contents = angular.element('<div></div>').html(template).contents();
-                animate.enter(contents, element);
-                return contents;
+                console.log('populate', template);
+                //console.log(template, element);
+                current = angular.element(template.trim());
+                animate.enter(current, element);
+                return element;
               }
             },
             "false": {
@@ -22585,6 +22562,7 @@ angular.module('Scope.safeApply', []).run(function($rootScope) {
   })
 ;
 ;var app = angular.module('app', [
+  'ngAnimate',
   'ui.router',
   'configuration'
 ])
@@ -22633,6 +22611,7 @@ angular.module('Scope.safeApply', []).run(function($rootScope) {
 
 ;
 var module = angular.module('application', [
+    'ngAnimate',
     'ui.router',
     'configuration',
     'Scope.safeApply',
