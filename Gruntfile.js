@@ -57,16 +57,26 @@ module.exports = function(grunt) {
         dest: './app/assets/app.css',
         src: cssFiles
       },
+      templates: {
+        dest: project.templatesPath + '/templates.js',
+        src: project.templatesPath + '/template_*.js'
+      }
+    },
+
+    ngmin: {
       scripts: {
         options: {
           separator: ';'
         },
-        dest: './app/assets/app.js',
+        dest: './app/assets/app.ngmin.js',
         src: jsFiles
       },
-      templates: {
-        dest: project.templatesPath + '/templates.js',
-        src: project.templatesPath + '/template_*.js'
+    },
+
+    uglify: {
+      min: {
+        src: './app/assets/app.ngmin.js',
+        dest: './app/assets/app.js'
       }
     },
 
@@ -182,7 +192,7 @@ module.exports = function(grunt) {
     watch: {
       assets: {
         files: ['app/styles/**/*.css','app/scripts/**'],
-        tasks: ['module-templates', 'concat']
+        tasks: ['module-templates', 'convert']
       }
     }
   });
@@ -204,14 +214,18 @@ module.exports = function(grunt) {
   //defaults
   grunt.registerTask('default',   ['dev']);
 
-  grunt.registerTask('build',     ['clean:build', 'copy:build']);
+  grunt.registerTask('convert',   ['ngmin:scripts', 'uglify:min']);
+
+  grunt.registerTask('build',     ['clean:build', 'convert', 'copy:build']);
+
+  grunt.registerTask('publish',   ['build', 'gh-pages-clean', 'gh-pages']);
 
   //development
-  grunt.registerTask('dev',       ['install', 'concat', 'connect:devserver', 'open:devserver', 'watch:assets']);
+  grunt.registerTask('dev',       ['install', 'convert', 'connect:devserver', 'open:devserver', 'watch:assets']);
 
   //development
-  grunt.registerTask('dev-no',    ['install', 'concat', 'connect:devserver', 'watch:assets']);
-  grunt.registerTask('dev-local', ['concat', 'connect:devserver', 'watch:assets']);
+  grunt.registerTask('dev-no',    ['install', 'convert', 'connect:devserver', 'watch:assets']);
+  grunt.registerTask('dev-local', ['convert', 'connect:devserver', 'watch:assets']);
 
   //server daemon
   grunt.registerTask('serve',     ['connect:webserver']);
