@@ -159,7 +159,7 @@ legend { display:none; }
 }
 
 .fader {
-  transition: opacity .5s ease-out;
+  transition: opacity 5s ease-out;
 }
 
 .fader.ng-enter {
