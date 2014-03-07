@@ -19236,3 +19236,6 @@ p.update .date {
 }
 
 
+#footer .widget {
+  margin-bottom: 0;
+}

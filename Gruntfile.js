@@ -216,6 +216,9 @@ module.exports = function(grunt) {
   //server daemon
   grunt.registerTask('serve',     ['connect:webserver']);
 
+  //github pages
+  grunt.registerTask('ghp',       ['gh-pages-clean', 'gh-pages']);
+
   grunt.registerTask("module-templates", "Create templates for all modules seperately", function() {
     // read the current config
     var ngtemplates = grunt.config.get('ngtemplates') || {};
