@@ -204,7 +204,7 @@ module.exports = function(grunt) {
   //defaults
   grunt.registerTask('default',   ['dev']);
 
-  grunt.registerTask('build',     ['clean:build', 'copy:build']);
+  grunt.registerTask('build',     ['clean:build', 'concat', 'copy:build']);
 
   //development
   grunt.registerTask('dev',       ['install', 'concat', 'connect:devserver', 'open:devserver', 'watch:assets']);
