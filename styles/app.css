@@ -19120,3 +19120,18 @@ table.table thead .sorting_desc_disabled {
     margin-left: 91.66667%;
   }
 }
+
+
+
+
+p.update {
+  padding-top: 30px;
+}
+
+p.update .date {
+  font-size: 10px;
+  font-weight: bold;
+  padding-right: 20px;
+}
+
+
